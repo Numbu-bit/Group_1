@@ -20,18 +20,13 @@ def initialize_ml_pipeline():
     and returns the live model along with feature averages for the UI.
     """
     # Locate the Data/data.csv file relative to this script's position
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = os.path.dirname(current_dir)
-    data_path = os.path.join(root_dir, "Data", "data.csv")
-    
-    # Fallback path if structured differently in deployment
-    if not os.path.exists(data_path):
-        data_path = os.path.join(current_dir, "Data", "data.csv")
+    # Look for data.csv in the same folder as this script (repository root)
+data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.csv")
 
-    if not os.path.exists(data_path):
-        st.error(f"🚨 **Critical Error: Dataset missing at path: `{data_path}`**")
-        st.info("💡 Please make sure your `Data` folder and `data.csv` are uploaded to your repository.")
-        st.stop()
+if not os.path.exists(data_path):
+    st.error(f"🚨 **Critical Error: Dataset missing at path: `{data_path}`**")
+    st.info("💡 Please make sure `data.csv` is uploaded to your repository root.")
+    st.stop()
         
     # Load and clean dataset
     df = pd.read_csv(data_path)
