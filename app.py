@@ -15,14 +15,17 @@ st.set_page_config(
 # 2. Automated On-the-Fly Training Cache Setup
 @st.cache_resource
 def initialize_ml_pipeline():
-    """Reads the raw CSV data, cleans it..."""
-    # Path logic
+    """Reads the raw CSV data, cleans it, trains a Random Forest classifier,
+    and returns the live model along with feature averages for the UI.
+    """
+    # Look for data.csv in the same folder as this script (repository root)
     data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.csv")
     
     if not os.path.exists(data_path):
-        st.error(f"...")
+        st.error(f"🚨 **Critical Error: Dataset missing at path:** `{data_path}`")
+        st.info("💡 Please make sure `data.csv` is uploaded to the root of your repository.")
         st.stop()
-    
+        
     # Load and clean dataset
     df = pd.read_csv(data_path)
     df = df.drop(["id", "Unnamed: 32"], axis=1, errors="ignore")
@@ -31,13 +34,15 @@ def initialize_ml_pipeline():
     X = df.drop("diagnosis", axis=1)
     y = df["diagnosis"]
 
+    # Calculate global averages to serve as dynamic baselines for the UI input fields
     feature_defaults = X.mean().to_dict()
 
+    # Train Random Forest Classifier
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     
-    return {"model": model, "defaults": feature_defaults}   # <-- this must be INDENTED inside the function
+    return {"model": model, "defaults": feature_defaults}
 
 # Extract the active model and UI defaults from the live memory pipeline
 try:
